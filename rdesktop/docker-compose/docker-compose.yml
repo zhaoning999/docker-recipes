@@ -1,0 +1,27 @@
+version: "2.1"
+services:
+  rdesktop:
+    image: linuxserver/rdesktop:ubuntu-xfce
+    container_name: rdesktop
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock #optional
+      - /home/ning/data/rdesktop/docker-compose/config:/config #optional
+    ports:
+      - 13389:3389
+    devices:
+      - /dev/dri:/dev/dri #optional
+    shm_size: "1gb" #optional
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
