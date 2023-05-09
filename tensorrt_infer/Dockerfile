@@ -120,7 +120,84 @@ WORKDIR /opt/nvidia/deepstream/deepstream
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libnvcuvid.so.1 /usr/lib/x86_64-linux-gnu/libnvcuvid.so
 RUN ln -s /usr/lib/x86_64-linux-gnu/libnvidia-encode.so.1 /usr/lib/x86_64-linux-gnu/libnvidia-encode.so
+RUN apt-get update && \
+      DEBIAN_FRONTEND=noninteractive  apt-get install -y --no-install-recommends \
+      build-essential \
+      cmake \
+      git \
+      libgtk2.0-dev \
+      pkg-config \
+      libavcodec-dev \
+      libavformat-dev \
+      libswscale-dev \
+      libtbb2 \
+      libtbb-dev \
+      libjpeg-dev \
+      libpng-dev \
+      libtiff-dev \
+      libdc1394-22-dev \
+      wget \
+      unzip
+
+# fastgithub
+
+ARG FASTGITHUB_URL=https://ghps.cc/https://github.com/dotnetcore/FastGithub/releases/download/2.1.4/fastgithub_linux-x64.zip
+
+RUN wget ${FASTGITHUB_URL} -O /root/fastgithub_linux-x64.zip && \
+    cd /root && \
+    unzip fastgithub_linux-x64.zip && \
+    rm -rf /root/fastgithub_linux-x64.zip
+
+# RUN nohup /root/fastgithub_linux-x64/fastgithub > /dev/null 2>&1 &
+
+# opencv
+ARG OPENCV_VERSION=4.7.0
+ARG OPENCV_URL=https://ghps.cc/https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz
+ARG OPENDV_DIR=/root/opencv-${OPENCV_VERSION}
+ARG OPENDV_INSTALL_DIR=/root/learn/opencv-${OPENCV_VERSION}
+
+ADD opencv-4.7.0/.cache /root/opencv-4.7.0
+RUN wget ${OPENCV_URL} -O ${OPENDV_DIR}.tar.gz && \
+    tar xvf ${OPENDV_DIR}.tar.gz -C /root && \
+    mkdir -p ${OPENDV_DIR}/build && \
+    cd ${OPENDV_DIR}/build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_DOCS=OFF \
+        -DBUILD_PERF_TESTS=OFF \
+        -DBUILD_opencv_python2=OFF \
+        -DBUILD_TESTS=OFF \
+        -DCMAKE_INSTALL_PREFIX=${OPENDV_INSTALL_DIR} \
+        .. && \
+    make -j$(nproc) && make install && \
+    rm -rf ${OPENDV_DIR} && \
+    rm -rf ${OPENDV_DIR}.tar.gz
+
+ARG PROTOBUF_VERSION=3.19.6
+ARG PROTOBUF_URL=https://ghps.cc/https://github.com/protocolbuffers/protobuf/archive/refs/tags/v${PROTOBUF_VERSION}.tar.gz
+ARG PROTOBUF_DIR=/root/protobuf-${PROTOBUF_VERSION}
+ARG PROTOBUF_INSTALL_DIR=/root/learn/protobuf-${PROTOBUF_VERSION}
+
+RUN wget ${PROTOBUF_URL} -O ${PROTOBUF_DIR}.tar.gz && \
+    tar xvf ${PROTOBUF_DIR}.tar.gz -C /root && \
+    mkdir -p ${PROTOBUF_DIR}/build && \
+    cd ${PROTOBUF_DIR}/build && \
+    cmake -DCMAKE_CXX_STANDARD=14 \
+        -DCMAKE_INSTALL_PREFIX=${PROTOBUF_INSTALL_DIR} \
+        -Dprotobuf_BUILD_TESTS=OFF \
+        ../cmake && \
+    make -j$(nproc) && make install && \
+    rm -rf ${PROTOBUF_DIR} && \
+    rm -rf ${PROTOBUF_DIR}.tar.gz 
 
 # To get video driver libraries at runtime (libnvidia-encode.so/libnvcuvid.so)
 ENV NVIDIA_DRIVER_CAPABILITIES $NVIDIA_DRIVER_CAPABILITIES,video,compute,graphics,utility
 
+# cmake -DCMAKE_BUILD_TYPE=Release \
+#     -DBUILD_EXAMPLES=OFF \
+#     -DBUILD_DOCS=OFF \
+#     -DBUILD_PERF_TESTS=OFF \
+#     -DBUILD_opencv_python2=OFF \
+#     -DBUILD_TESTS=OFF \
+#     -DCMAKE_INSTALL_PREFIX=/root/learn/opencv-4.7.0 \
+#     ..
