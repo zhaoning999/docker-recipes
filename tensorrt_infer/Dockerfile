@@ -95,6 +95,7 @@ RUN apt-get update && \
         libnvonnxparsers-dev=${TENSORRT_VERSION} \
         libnvinfer-plugin8=${TENSORRT_VERSION} \
         libnvinfer-plugin-dev=${TENSORRT_VERSION} \
+	libnvinfer-samples=${TENSORRT_VERSION} \
         python3-libnvinfer=${TENSORRT_VERSION} \
         python3-libnvinfer-dev=${TENSORRT_VERSION} && \
         rm -rf /var/lib/apt/lists/* && \
